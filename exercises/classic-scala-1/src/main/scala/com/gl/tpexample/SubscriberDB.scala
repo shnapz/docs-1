@@ -10,6 +10,10 @@ trait Subscriber
 
 trait TariffPlan
 {
+  /**
+    * @param logs  set of actions for one user.
+    * output: price or error message if logs is incorrect.
+    */
   def rate(logs:Seq[UserAction]):Either[String,Double]
 }
 
