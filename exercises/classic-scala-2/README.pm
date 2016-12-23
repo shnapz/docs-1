@@ -1,5 +1,3 @@
-
-
 1.  Please, read article about try/defer statement in Go programming language:
                          https://blog.golang.org/defer-panic-and-recover
                      
@@ -7,7 +5,7 @@
 
 3.  Example - receive something like:
 
-```
+```scala
  object Main
 {
 
@@ -30,5 +28,4 @@
 
 
 }
-
 ```
