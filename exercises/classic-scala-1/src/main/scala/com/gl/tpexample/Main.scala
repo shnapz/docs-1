@@ -48,7 +48,6 @@ object Main {
 
   def writeFile[T,Encoding[_]](fname:String, data: Seq[T])(implicit ser:Encoding[T]):Unit = ???
 
-
   def readFileAsStrings(fname:String):Iterator[String] =
     io.Source.fromFile(new File(fname)).getLines()
 
