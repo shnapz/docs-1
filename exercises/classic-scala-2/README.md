@@ -3,7 +3,7 @@
 1.  Please, read article about try/defer statement in Go programming language:
                          https://blog.golang.org/defer-panic-and-recover
                      
-2.  Implement something maximum simular in scala
+2.  Implement something maximum simular in scala. (i.e. write library)
 
 3.  Example - receive something like:
 
