@@ -1,5 +1,3 @@
-
-
 1.  Please, read article about try/defer statement in Go programming language:
                          https://blog.golang.org/defer-panic-and-recover
                      
@@ -30,5 +28,5 @@ object Main
 
 
 }
-
 ```
+
