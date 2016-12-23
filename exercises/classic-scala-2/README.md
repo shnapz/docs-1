@@ -8,7 +8,7 @@
 3.  Example - receive something like:
 
 ```
- object Main
+object Main
 {
 
   def main(args:Array[String]):Unit =
