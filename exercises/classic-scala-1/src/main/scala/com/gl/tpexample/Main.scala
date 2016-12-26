@@ -41,9 +41,10 @@ object Main {
   def main(args: Array[String]):Unit =
   {
     import UserAction._
-    val input = readFile[UserAction](args(0))
-    val output = rate(input)
-    writeFile[SubscriberRate,CSVEncoding](args(1),output)
+    for( input <- readFile[UserAction](args(0)).right) {
+      val output = rate(input)
+      writeFile[SubscriberRate, CSVEncoding](args(1), output)
+    }
   }
 
   def rate(log:Seq[UserAction]):Seq[SubscriberRate] = ???
@@ -51,20 +52,32 @@ object Main {
   def readFile[T](fname:String)(implicit ser:CSVEncoding[T]): Either[String,Seq[T]] =
   {
 
-    /*
+
     try {
+
       Right(
-       for (s <- readFileAsStrings(fname).toSeq) yield {
+      for (s <- readFileAsStrings(fname).toSeq) yield {
          ser.decode(s).left.map { message =>
            throw new IllegalAccessException(message)
-         }
+         }.right.get
        }
       )
+      /*
+      val x:Seq[T] = readFileAsStrings(fname).toSeq map { s =>
+        (ser.decode(s).left.map{ message =>
+          throw new IllegalStateException(message)
+        }).right.get
+      }
+
+      Right(x)
+      */
+
     } catch {
       case NonFatal(e) => Left(e.getMessage)
     }
-    */
 
+
+    /*
     Try {
       for ((s,i) <- readFileAsStrings(fname).zipWithIndex.toSeq) yield {
         ser.decode(s) match {
@@ -73,6 +86,7 @@ object Main {
         }
       }
     }   .toEither.left.map(_.getMessage)
+    */
 
     /*
     val s0: Either[String,Seq[T]] = Right(Seq())

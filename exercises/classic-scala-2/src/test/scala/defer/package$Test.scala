@@ -2,6 +2,8 @@ package defer
 
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
 
+import scala.util.Try
+
 /**
   * Created by v-igsyro on 12/26/2016.
   */
@@ -35,26 +37,48 @@ class package$Test extends FunSuite with BeforeAndAfterEach{
       defer{ out.close() }
     }
 
+  def simulateCopy2(inf: FileMoq, outf: FileMoq) =
+    withDefer { defer =>
+      in = new FileInputStreamMoq(inf)
+      defer{ in.close() }
+      throw new RuntimeException("Be-be-be")
+      out = new FileOutputStream(outf)
+      defer{ out.close() }
+    }
+
+
+
   override def beforeEach(): Unit = {
     in = null
     out = null
     actionCallsLog = List()
-    simulateCopy(new FileMoq("//fake/path/to/inputFile"), new FileMoq("//fake/path/to/outputFile"))
   }
 
   test("An input file is closed") {
+    simulateCopy(new FileMoq("//fake/path/to/inputFile"), new FileMoq("//fake/path/to/outputFile"))
     assert(in.isClosed)
   }
 
   test("An output file is closed") {
+    simulateCopy(new FileMoq("//fake/path/to/inputFile"), new FileMoq("//fake/path/to/outputFile"))
     assert(out.isClosed)
   }
 
   test("An output stream is closed firstly"){
-    assert(actionCallsLog(0) == CloseOutputStreamLogMsg)
+    simulateCopy(new FileMoq("//fake/path/to/inputFile"), new FileMoq("//fake/path/to/outputFile"))
+    assert(actionCallsLog(0) === CloseOutputStreamLogMsg)
   }
 
   test("An input stream is closed lastly"){
-    assert(actionCallsLog(1) == CloseInputStreamLogMsg)
+    simulateCopy(new FileMoq("//fake/path/to/inputFile"), new FileMoq("//fake/path/to/outputFile"))
+    assert(actionCallsLog(1) === CloseInputStreamLogMsg)
   }
+
+  test("When we have exception, input stream must be close") {
+    Try(
+      simulateCopy2(new FileMoq("//fake/path/to/inputFile"), new FileMoq("//fake/path/to/outputFile"))
+    )
+    assert(actionCallsLog(0) === CloseInputStreamLogMsg)
+  }
+
 }
