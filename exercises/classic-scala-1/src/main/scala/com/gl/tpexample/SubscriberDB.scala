@@ -27,9 +27,12 @@ trait Unlimited extends TariffPlan
 object UserDB
 {
 
-  def tariffPlan[T <: TariffPlan](s:Subscriber): T = ???
+  def tariffPlan(s:Subscriber): TariffPlan = ???
 
   def subscriber(subscriberId:Long): Option[Subscriber] = ???
+
+  def retrieveSubscriber(subscriberId:Long): Either[String,Subscriber] =
+    subscriber(subscriberId).toRight(s"subscriber with id $subscriberId is not found"")
 
 }
 

@@ -47,7 +47,30 @@ object Main {
     }
   }
 
-  def rate(log:Seq[UserAction]):Seq[SubscriberRate] = ???
+  def rate(actions:Seq[UserAction]):Seq[SubscriberRate] = ???
+
+  def calculateRate(subscriberId: Long, actions: Seq[UserAction]): Either[String,SubscriberRate] = {
+        for{subscriber <- UserDB.retrieveSubscriber(subscriberId)
+            tariffPlan = UserDB.tariffPlan(subscriber)
+            r <- tariffPlan.rate(actions) } yield {
+              val minMax = calculateMinMax(actions)
+              SubscriberRate(subscriberId, minMax._1, minMax._2, tariffPlan.toString, r)
+        }
+  }
+
+
+
+  def calculateMinMax(actions:Seq[UserAction]):(Long,Long) =
+  {
+    val s0 = (Long.MaxValue,Long.MinValue)
+    actions.foldLeft(s0){ (s,e) =>
+      val t = e.timestamp
+      val newMin = Math.min(t,s._1)
+      val newMax = Math.max(t,s._2)
+      (newMin,newMax)
+    }
+
+  }
 
   def readFile[T](fname:String)(implicit ser:CSVEncoding[T]): Either[String,Seq[T]] =
   {
