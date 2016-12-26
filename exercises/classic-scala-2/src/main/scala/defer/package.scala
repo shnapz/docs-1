@@ -3,12 +3,12 @@
   */
 
 package object defer {
-  def withDefer[ActionType](inDefferedContext: ActionsWrapper => ActionType):ActionType = {
+  def withDefer[ActionType](inDeferredContext: ActionsWrapper => ActionType):ActionType = {
     val actionWrapper = new ActionsWrapper()
     try {
-      inDefferedContext(actionWrapper)
+      inDeferredContext(actionWrapper)
     }finally {
-      actionWrapper.runAllDefferedActions()
+      actionWrapper.runAllDeferredActions()
     }
   }
 }
