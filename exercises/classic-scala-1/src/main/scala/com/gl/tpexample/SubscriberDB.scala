@@ -3,31 +3,34 @@ package com.gl.tpexample
 import scala.reflect.runtime.universe._
 
 
-trait Subscriber
-{
-  def id: Long
+case class Subscriber(id: Long)
+
+sealed trait TariffPlan {
+  def rate(logs: Seq[UserAction]): Either[String, Double]
 }
 
-trait TariffPlan
-{
-  def rate(logs:Seq[UserAction]):Either[String,Double]
+case class Unlimited(fixedRate: Double) extends TariffPlan {
+  def rate(logs: Seq[UserAction]): Either[String, Double] = Right(fixedRate)
 }
 
-trait Unlimited extends TariffPlan
-{
-  // TODO: implement
+case class Regular(baseRate: Double) extends TariffPlan {
+  def rate(logs: Seq[UserAction]): Either[String, Double] = Right(
+    logs.foldLeft(0.0)((rate, userAction) => userAction match {
+      case UserAction(_, _, "SMS", _, _, _) => rate + baseRate * 0.001
+      case UserAction(_, _, "Voice", _, duration, _) => rate + baseRate * duration
+    }))
 }
 
+object UserDB {
 
+  def tariffPlan(s: Subscriber): TariffPlan = s match {
+    case Subscriber(1) => Unlimited(100)
+    case Subscriber(2) => Regular(5)
+  }
 
-object UserDB
-{
-
-  def tariffPlan[T <: TariffPlan](s:Subscriber): T = ???
-
-  def subscriber(subscriberId:Long): Option[Subscriber] = ???
+  def subscriber(subscriberId: Long): Option[Subscriber] = subscriberId match {
+    case 1 | 2 => Some(Subscriber(subscriberId))
+    case _ => None
+  }
 
 }
-
-
-

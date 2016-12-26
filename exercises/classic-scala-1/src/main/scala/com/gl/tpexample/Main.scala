@@ -1,56 +1,51 @@
 package com.gl.tpexample
 
-import java.io.File
-
-//TODO: implement 2 types of tariff plans
-// type Unlimit: monthly-fee
-// type:  SMS - 0.001$ * baseCost,   Voice - baseCost
-//    customer, which have second TP, can have additional filelds - their rate coefficients.
-
-case class SubscriberRate(userId: Long, start:Long, end:Long, tariffPlanName: String, rate:Double)
-
-object SubscriberRate
-{
-
-  implicit def csv: CSV[SubscriberRate] = ???
-
-}
-
-trait CSV[T]
-{
-
-  def decode(s:String):Either[String,T]
-
-  def encode(t:T):String
-
-}
-
+import java.io.{File, PrintWriter}
 
 object Main {
 
-
-  /**
-    * Input:  CSV  file, with UserActions
-    * Output:  CSV file || screen output: from SubscriberRate
-    *    UserId,
-    * @param args
-    */
-  def main(args: Array[String]):Unit =
-  {
-    val input = readFile[UserAction,CSV](args(0))
+  def main(args: Array[String]): Unit = {
+    val input = readFile[UserAction](args(0))
     val output = rate(input)
-    writeFile[SubscriberRate,CSV](args(1),output)
+    writeFile[SubscriberRate](args(1), output)
   }
 
-  def rate(log:Seq[UserAction]):Seq[SubscriberRate] = ???
+  def rate(log: Seq[UserAction]): Seq[SubscriberRate] = {
+    log.groupBy(action => action.subscriberId)
+      .toList
+      .map({ case (subscriberId, actions) => calculateRate(subscriberId, actions) })
+      .filter(o => o.isDefined)
+      .map(o => o.get)
+  }
 
-  def readFile[T,Encoding[_]](fname:String)(implicit ser:Encoding[T]):Seq[T] = ???
+  def calculateRate(subscriberId: Long, actions: Seq[UserAction]): Option[SubscriberRate] = {
+    UserDB.subscriber(subscriberId) match {
+      case Some(subscriber) => {
+        val tariffPlan = UserDB.tariffPlan(subscriber)
+        val rate = tariffPlan.rate(actions) match {
+          case Right(r) => r
+          case Left(l) => 0
+        }
+        val timestamps = actions.map(a => a.timestamp)
+        Some(SubscriberRate(subscriberId, timestamps.min, timestamps.max, tariffPlan.toString, rate))
+      }
+      case _ => None
+    }
+  }
 
-  def writeFile[T,Encoding[_]](fname:String, data: Seq[T])(implicit ser:Encoding[T]):Unit = ???
+  def readFile[T](fname: String)(implicit ser: CSV[T]): Seq[T] =
+    readFileAsStrings(fname)
+      .map(s => ser.decode(s))
+      .filter(e => e.isRight)
+      .map(e => e.right.get)
+      .toSeq
 
-  def readFileAsStrings(fname:String):Iterator[String] =
+  def writeFile[T](fname: String, data: Seq[T])(implicit ser: CSV[T]): Unit = new PrintWriter(fname) {
+    for (t <- data) println(ser.encode(t))
+    close()
+  }
+
+  def readFileAsStrings(fname: String): Iterator[String] =
     io.Source.fromFile(new File(fname)).getLines()
-
-
 
 }
