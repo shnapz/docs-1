@@ -12,32 +12,24 @@ object Main {
 
   def rate(log: Seq[UserAction]): Seq[SubscriberRate] = {
     log.groupBy(action => action.subscriberId)
-      .toList
+      .toSeq
       .map({ case (subscriberId, actions) => calculateRate(subscriberId, actions) })
-      .filter(o => o.isDefined)
-      .map(o => o.get)
+      .filter(_.isDefined)
+      .map(_.get)
   }
 
-  def calculateRate(subscriberId: Long, actions: Seq[UserAction]): Option[SubscriberRate] = {
-    UserDB.subscriber(subscriberId) match {
-      case Some(subscriber) => {
-        val tariffPlan = UserDB.tariffPlan(subscriber)
-        val rate = tariffPlan.rate(actions) match {
-          case Right(r) => r
-          case Left(l) => 0
-        }
-        val timestamps = actions.map(a => a.timestamp)
-        Some(SubscriberRate(subscriberId, timestamps.min, timestamps.max, tariffPlan.toString, rate))
-      }
-      case _ => None
-    }
-  }
+  def calculateRate(subscriberId: Long, actions: Seq[UserAction]): Option[SubscriberRate] = for {
+    subscriber <- UserDB.subscriber(subscriberId)
+    tariffPlan = UserDB.tariffPlan(subscriber)
+    rate <- tariffPlan.rate(actions)
+    timestamps = actions.map(_.timestamp)
+  } yield SubscriberRate(subscriberId, timestamps.min, timestamps.max, tariffPlan.toString, rate)
 
   def readFile[T](fname: String)(implicit ser: CSV[T]): Seq[T] =
     readFileAsStrings(fname)
-      .map(s => ser.decode(s))
-      .filter(e => e.isRight)
-      .map(e => e.right.get)
+      .map(ser.decode)
+      .filter(_.isRight)
+      .map(_.right.get)
       .toSeq
 
   def writeFile[T](fname: String, data: Seq[T])(implicit ser: CSV[T]): Unit = new PrintWriter(fname) {

@@ -1,20 +1,17 @@
 package com.gl.tpexample
 
-import scala.reflect.runtime.universe._
-
-
 case class Subscriber(id: Long)
 
 sealed trait TariffPlan {
-  def rate(logs: Seq[UserAction]): Either[String, Double]
+  def rate(logs: Seq[UserAction]): Option[Double]
 }
 
 case class Unlimited(fixedRate: Double) extends TariffPlan {
-  def rate(logs: Seq[UserAction]): Either[String, Double] = Right(fixedRate)
+  def rate(logs: Seq[UserAction]): Option[Double] = Some(fixedRate)
 }
 
 case class Regular(baseRate: Double) extends TariffPlan {
-  def rate(logs: Seq[UserAction]): Either[String, Double] = Right(
+  def rate(logs: Seq[UserAction]): Option[Double] = Some(
     logs.foldLeft(0.0)((rate, userAction) => userAction match {
       case UserAction(_, _, "SMS", _, _, _) => rate + baseRate * 0.001
       case UserAction(_, _, "Voice", _, duration, _) => rate + baseRate * duration
