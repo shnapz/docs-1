@@ -10,11 +10,13 @@ object Ops {
     }
 
   private def putCoin(coinValue: Int)(state: State): (State, Seq[OutputAction]) = {
-    (State(state.currentSum + coinValue,
-      state.currentItem,
-      putCoin(coinValue, state.coinsContainers),
-      state.itemsContainers),
+    (
+      state.copy(currentSum = state.currentSum + coinValue,
+        coinsContainers = putCoin(coinValue, state.coinsContainers))
+      ,
       Seq())
+
+
   }
 
   private def putCoin(coinValue: Int, to: CoinsContainers): CoinsContainers = {
@@ -23,22 +25,49 @@ object Ops {
   }
 
   private def chooseItem2(id: Int)(state: State): (State, Seq[OutputAction]) = {
-    state.itemsContainers.get(id) match {
-      case None => (state, Seq(DisplayReject(ErrorMessages.NO_ITEM_WITH_SUCH_ID)))
+    val change = state.itemsContainers.get(id) match {
+      case None => displayReject(ErrorMessages.NO_ITEM_WITH_SUCH_ID)
       case Some(itemContainer) => {
         calculateChange(state.currentSum, itemContainer.price) match {
-          case None => (state, Seq(DisplayReject(ErrorMessages.NOT_ENOUGH_MONEY)))
+          case None => displayReject(ErrorMessages.NOT_ENOUGH_MONEY)
           case Some(change) => {
             val (stateWithoutItem, itemSeq) = outItem(id)(state)
             outCoins(change)(stateWithoutItem) match {
-              case None => (state, Seq(DisplayReject(ErrorMessages.CANNOT_GIVE_CHANGE)))
-              case Some((stateWithoutChange, changeSeq)) => (stateWithoutChange, itemSeq ++ changeSeq)
+              case None => displayReject(ErrorMessages.CANNOT_GIVE_CHANGE)
+              case Some((stateWithoutChange, changeSeq)) =>
+                          (s:State) => (stateWithoutChange, itemSeq ++ changeSeq)
             }
           }
         }
       }
     }
+
+    change(state)
+
   }
+
+  private def chooseItem3(id: Int)(state: State): (State, Seq[OutputAction]) = {
+    import ErrorMessages._
+    val either = for {
+      itemContainer <- state.itemsContainers.get(id).toRight(NO_ITEM_WITH_SUCH_ID)
+      change <- calculateChange(state.currentSum, itemContainer.price).toRight(NOT_ENOUGH_MONEY)
+      (stateWithoutItem, itemSeq) = outItem(id)(state)
+      (stateWithoutChange, changeSeq) <- outCoins(change)(stateWithoutItem).toRight(CANNOT_GIVE_CHANGE)
+    } yield {
+      (stateWithoutChange, itemSeq ++ changeSeq)
+    }
+    either match {
+      case Left(message) => displayReject(message)(state)
+      case Right(newState) => newState
+    }
+
+  }
+
+
+    def displayReject(message:String)(state:State):(State,Seq[OutputAction]) = {
+    (state, Seq(DisplayReject(message)))
+  }
+
 
   private def chooseItem(id: Int)(state: State): (State, Seq[OutputAction]) = {
     checkItemId(id, state)
@@ -70,10 +99,7 @@ object Ops {
   }
 
   private def outItem(id: Int)(state: State): (State, Seq[OutputAction]) =
-    (State(state.currentSum,
-      state.currentItem,
-      state.coinsContainers,
-      removeItem(id, state.itemsContainers)),
+    (state.copy(itemsContainers = removeItem(id, state.itemsContainers)),
       Seq(OutItem(id)))
 
   private def removeItem(id: Int, from: ItemsContainers): ItemsContainers = {
