@@ -1,40 +1,42 @@
 package com.gl.tpexample
 
-import scala.reflect.runtime.universe._
+case class Subscriber(id: Long)
 
-
-trait Subscriber
-{
-  def id: Long
-}
-
-trait TariffPlan
-{
+sealed trait TariffPlan {
   /**
-    * @param logs  set of actions for one user.
     * output: price or error message if logs is incorrect.
     */
-  def rate(logs:Seq[UserAction]):Either[String,Double]
+  def rate(logs: Seq[UserAction]): Option[Double]
 }
 
-trait Unlimited extends TariffPlan
-{
-  // TODO: implement
+case class Unlimited(fixedRate: Double) extends TariffPlan {
+  def rate(logs: Seq[UserAction]): Option[Double] = Some(fixedRate)
 }
 
+case class Regular(baseRate: Double) extends TariffPlan {
+  def rate(logs: Seq[UserAction]): Option[Double] = Some(
+    logs.foldLeft(0.0)((rate, userAction) => userAction match {
+      case UserAction(_, _, "SMS", _, _, _) => rate + baseRate * 0.001
+      case UserAction(_, _, "Voice", _, duration, _) => rate + baseRate * duration
+    }))
+}
 
+object UserDB {
+
+  def tariffPlan(s: Subscriber): TariffPlan = s match {
+    case Subscriber(1) => Unlimited(100)
+    case Subscriber(2) => Regular(5)
+  }
 
 object UserDB
 {
 
   def tariffPlan(s:Subscriber): TariffPlan = ???
 
-  def subscriber(subscriberId:Long): Option[Subscriber] = ???
+  def subscriber(subscriberId: Long): Option[Subscriber] = subscriberId match {
+    case 1 | 2 => Some(Subscriber(subscriberId))
+    case _ => None
+  }
 
-  def retrieveSubscriber(subscriberId:Long): Either[String,Subscriber] =
-    subscriber(subscriberId).toRight(s"subscriber with id $subscriberId is not found"")
 
 }
-
-
-
