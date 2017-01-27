@@ -10,14 +10,6 @@ import scala.util.control.NonFatal
 // type:  SMS - 0.001$ * baseCost,   Voice - baseCost
 //    customer, which have second TP, can have additional filelds - their rate coefficients.
 
-case class SubscriberRate(userId: Long, start:Long, end:Long, tariffPlanName: String, rate:Double)
-
-object SubscriberRate
-{
-
-  implicit def csv: CSVEncoding[SubscriberRate] = ???
-
-}
 
 trait CSVEncoding[T]
 {

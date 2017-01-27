@@ -21,17 +21,20 @@ case class Regular(baseRate: Double) extends TariffPlan {
     }))
 }
 
+/*
 object UserDB {
 
   def tariffPlan(s: Subscriber): TariffPlan = s match {
     case Subscriber(1) => Unlimited(100)
     case Subscriber(2) => Regular(5)
   }
+*/
 
 object UserDB
 {
 
-  def tariffPlan(s:Subscriber): TariffPlan = ???
+  def tariffPlan(s:Subscriber): AppContext => Task[TariffPlan] = ???
+                             // Kleisli[Task, AppContext, TariffPlan]
 
   def subscriber(subscriberId: Long): Option[Subscriber] = subscriberId match {
     case 1 | 2 => Some(Subscriber(subscriberId))
@@ -40,3 +43,4 @@ object UserDB
 
 
 }
+
