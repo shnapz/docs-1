@@ -1,5 +1,7 @@
 package com.gl.tpexample
 
+import fs2.Task
+
 case class Subscriber(id: Long)
 
 sealed trait TariffPlan {
@@ -20,6 +22,8 @@ case class Regular(baseRate: Double) extends TariffPlan {
       case UserAction(_, _, "Voice", _, duration, _) => rate + baseRate * duration
     }))
 }
+
+trait AppContext
 
 /*
 object UserDB {

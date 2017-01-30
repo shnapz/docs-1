@@ -20,6 +20,7 @@ trait CSVEncoding[T]
 
 }
 
+//import SubscriberRate._
 
 object Main {
 
@@ -30,6 +31,7 @@ object Main {
     *    UserId,
     * @param args
     */
+  /*
   def main(args: Array[String]):Unit =
   {
     import UserAction._
@@ -123,13 +125,6 @@ object Main {
     timestamps = actions.map(_.timestamp)
   } yield SubscriberRate(subscriberId, timestamps.min, timestamps.max, tariffPlan.toString, rate)
 
-  def readFile[T](fname: String)(implicit ser: CSV[T]): Seq[T] =
-    readFileAsStrings(fname)
-      .map(ser.decode)
-      .filter(_.isRight)
-      .map(_.right.get)
-      .toSeq
-
   def writeFile[T](fname: String, data: Seq[T])(implicit ser: CSV[T]): Unit = new PrintWriter(fname) {
     for (t <- data) println(ser.encode(t))
     close()
@@ -138,4 +133,5 @@ object Main {
   def readFileAsStrings(fname: String): Iterator[String] =
     io.Source.fromFile(new File(fname)).getLines()
 
+  */
 }
