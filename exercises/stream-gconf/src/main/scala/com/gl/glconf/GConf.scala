@@ -1,7 +1,9 @@
 package com.gl.glconf
 
+import fs2.util.Suspendable
+
 import scala.util.Try
-import scalaz.{MonadError, ~>}
+import scalaz.{Applicative, MonadError, ~>}
 
 
 trait GConf {
@@ -18,7 +20,7 @@ object GConf
 
   trait Source
   {
-    def input[M[_]]: fs2.Stream[M,Byte]
+    def input[M[_]]()(implicit mAp:Suspendable[M]): fs2.Stream[M,Byte]
   }
 
   trait Format
@@ -26,9 +28,9 @@ object GConf
     def parse[M[_]](input: fs2.Stream[M,Byte]):M[GConf]
   }
 
-  def load[M[_],S <: Source ,F <: Format](source:Source,format:Format):M[GConf] =
+  def load[M[_],S <: Source ,F <: Format](source:Source,format:Format)(implicit mAp:Suspendable[M]): M[GConf] =
   {
-     format.parse(source.input)
+     format.parse(source.input[M])
   }
 
 
