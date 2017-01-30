@@ -12,6 +12,7 @@ libraryDependencies ++= Seq(
  "org.scalaz" %% "scalaz-core" % scalazVersion,
  "org.scalaz" %% "scalaz-effect" % scalazVersion,
  "co.fs2" %% "fs2-scalaz" % "0.2.0",
- "co.fs2" %% "fs2-io" % "0.9.2"
+ "co.fs2" %% "fs2-io" % "0.9.2",
+ "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
 

@@ -20,6 +20,9 @@ trait CSVEncoding[T]
 
 }
 
+//x=y
+//y=z
+
 //import SubscriberRate._
 
 object Main {
@@ -31,19 +34,18 @@ object Main {
     *    UserId,
     * @param args
     */
-  /*
   def main(args: Array[String]):Unit =
   {
     import UserAction._
     for( input <- readFile[UserAction](args(0)).right) {
       val output = rate(input)
-      writeFile[SubscriberRate, CSVEncoding](args(1), output)
+      writeFile[SubscriberRate](args(1), output)
     }
   }
 
   def rate(actions:Seq[UserAction]):Seq[SubscriberRate] = ???
 
-  def calculateRate(subscriberId: Long, actions: Seq[UserAction]): Either[String,SubscriberRate] = {
+  def calculateRate(subscriberId: Long, actions: Seq[UserAction]): AppContext => Either[String,SubscriberRate] = { ctx =>
         for{subscriber <- UserDB.retrieveSubscriber(subscriberId)
             tariffPlan = UserDB.tariffPlan(subscriber)
             r <- tariffPlan.rate(actions) } yield {

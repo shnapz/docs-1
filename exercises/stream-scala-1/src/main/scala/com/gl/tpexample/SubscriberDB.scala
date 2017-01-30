@@ -23,7 +23,6 @@ case class Regular(baseRate: Double) extends TariffPlan {
     }))
 }
 
-trait AppContext
 
 /*
 object UserDB {
@@ -38,7 +37,6 @@ object UserDB
 {
 
   def tariffPlan(s:Subscriber): AppContext => Task[TariffPlan] = ???
-                             // Kleisli[Task, AppContext, TariffPlan]
 
   def subscriber(subscriberId: Long): Option[Subscriber] = subscriberId match {
     case 1 | 2 => Some(Subscriber(subscriberId))
